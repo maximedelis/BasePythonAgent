@@ -11,7 +11,7 @@ async def main():
 
     callback_host = f"http://{mythic_host}"
     callback_port = 80
-    agent_name = "mxdl_agent"  # set in the builder
+    agent_name = "python_agent"  # set in the builder
 
     print(
         f"[*] Connecting to Mythic at {mythic_host} with username {mythic_login_username}"

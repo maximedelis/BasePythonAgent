@@ -7,8 +7,8 @@ import os
 import pathlib
 
 
-class MxdlAgent(PayloadType):
-    name = "mxdl_agent"  # NEEDS TO BE THE SAME AS THE DIRECTORY THE AGENT IS IN
+class PythonAgent(PayloadType):
+    name = "python_agent"  # NEEDS TO BE THE SAME AS THE DIRECTORY THE AGENT IS IN
     file_extension = "py"
     author = "@maximedelis"
     supported_os = [SupportedOS.Linux, SupportedOS.MacOS, SupportedOS.Windows]
@@ -28,7 +28,7 @@ class MxdlAgent(PayloadType):
             default_value="py"
         )
     ]
-    agent_path = pathlib.Path(".") / "mxdl_agent"
+    agent_path = pathlib.Path(".") / "python_agent"
     agent_icon_path = agent_path / "agent_functions" / "bug.svg"
     agent_code_path = agent_path / "agent_code"
 
