@@ -12,7 +12,9 @@ A basic Python agent for Mythic. Based on Medusa.
 
 ## Install
 
-- `sudo ./mythic-cli install github https://github.com/maximedelis/BasePythonAgent.git`
+```bash
+sudo ./mythic-cli install github https://github.com/maximedelis/BasePythonAgent.git
+```
 
 ## Agent commands
 
