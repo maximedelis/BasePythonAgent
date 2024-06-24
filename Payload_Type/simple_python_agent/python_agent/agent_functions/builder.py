@@ -15,7 +15,7 @@ class PythonAgent(PayloadType):
     wrapper = False
     wrapped_payloads = []
     note = """Basic Implant in Python"""
-    supports_dynamic_loading = False
+    supports_dynamic_loading = True
     c2_profiles = ["http"]
     mythic_encrypts = True
     translation_container = None

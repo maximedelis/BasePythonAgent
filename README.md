@@ -20,3 +20,4 @@ sudo ./mythic-cli install github https://github.com/maximedelis/BasePythonAgent.
 
 - `shell <command>`: Execute a shell command.
 - `cd <directory>`: Change the current working directory.
+- `upload`: Upload a file to the target.
