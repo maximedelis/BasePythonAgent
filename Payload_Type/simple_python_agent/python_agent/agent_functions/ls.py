@@ -1,39 +1,47 @@
 from mythic_container.MythicCommandBase import *
+import json
 from mythic_container.MythicRPC import *
+import sys
 
 
-class ShellArguments(TaskArguments):
-
+class LsArguments(TaskArguments):
     def __init__(self, command_line, **kwargs):
         super().__init__(command_line, **kwargs)
         self.args = [
             CommandParameter(
-                name="command",
+                name="path",
                 type=ParameterType.String,
-                description="Command to run"
-            ),
+                default_value=".",
+                parameter_group_info=[ParameterGroupInfo(
+                    required=False
+                )],
+                description="Path of file or folder on the current system to list",
+            )
         ]
 
     async def parse_arguments(self):
-        self.add_arg("command", self.command_line)
+        self.add_arg("path", self.command_line)
 
     async def parse_dictionary(self, dictionary_arguments):
         self.load_args_from_dictionary(dictionary_arguments)
 
 
-class ShellCommand(CommandBase):
-    cmd = "shell"
+class LsCommand(CommandBase):
+    cmd = "ls"
     needs_admin = False
-    help_cmd = "shell [command]"
-    description = "Execute a shell command in the terminal"
+    help_cmd = "ls [/path/to/file]"
+    description = "Get attributes about a file / a folder."
     version = 1
     author = "@maximedelis"
-    argument_class = ShellArguments
-    attackmapping = ["T1059"]
+    attackmapping = ["T1083"]
+    supported_ui_features = ["file_browser:list"]
+    is_file_browse = True
+    argument_class = LsArguments
+    browser_script = BrowserScript(script_name="ls", author="@maximedelis", for_new_ui=True)
     attributes = CommandAttributes(
         supported_os=[SupportedOS.MacOS, SupportedOS.Linux, SupportedOS.Windows],
-        builtin=True,
-        suggested_command=True,
+        builtin=False,
+        suggested_command=False,
     )
 
     async def create_go_tasking(self,

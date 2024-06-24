@@ -10,14 +10,16 @@ class CdArguments(TaskArguments):
             CommandParameter(
                 name="path",
                 type=ParameterType.String,
+                default_value=".",
+                parameter_group_info=[ParameterGroupInfo(
+                    required=False
+                )],
                 description="Path of the folder to change to",
             ),
         ]
 
     async def parse_arguments(self):
-        if len(self.command_line) == 0:
-            raise ValueError("Must supply a directory to change to")
-        self.add_arg("command", self.command_line)
+        self.add_arg("path", self.command_line)
 
     async def parse_dictionary(self, dictionary_arguments):
         self.load_args_from_dictionary(dictionary_arguments)

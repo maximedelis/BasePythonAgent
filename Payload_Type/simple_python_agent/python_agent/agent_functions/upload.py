@@ -19,7 +19,7 @@ class UploadArguments(TaskArguments):
             ),
         ]
 
-    async def parse_arguments(self):
+    async def parse_arguments(self):  # not even sure it's useful
         if len(self.command_line) == 0:
             raise ValueError("Must supply the file to upload")
         self.add_arg("command", self.command_line)
