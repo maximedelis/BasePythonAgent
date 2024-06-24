@@ -12,14 +12,14 @@ class PythonAgent(PayloadType):
     file_extension = "py"
     author = "@maximedelis"
     supported_os = [SupportedOS.Linux, SupportedOS.MacOS, SupportedOS.Windows]
-    wrapper = False  # If we want to use a wrapper like scarescrow
-    wrapped_payloads = []  # If wrapper, list of wrapper payloads to use
-    note = """Basic Implant in Python"""  # Description
-    supports_dynamic_loading = False  # Support of dynamic code loading
-    c2_profiles = ["http"]  # Listener types
-    mythic_encrypts = False  # is the encryption handled by Mythic
-    translation_container = None  # "MxdlTranslator"
-    build_parameters = [  # Array if we want custom parameters during build
+    wrapper = False
+    wrapped_payloads = []
+    note = """Basic Implant in Python"""
+    supports_dynamic_loading = False
+    c2_profiles = ["http"]
+    mythic_encrypts = False
+    translation_container = None
+    build_parameters = [
         BuildParameter(
             name="output",
             parameter_type=BuildParameterType.ChooseOne,

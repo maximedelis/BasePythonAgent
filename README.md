@@ -1,6 +1,6 @@
 # BasePythonAgent
 
-A basic Python agent for Mythic. Based on Medusa.
+A simple Python agent for Mythic using the [http](https://github.com/MythicC2Profiles/http) C2 Profile. Based on Medusa.
 
 ## Setup and run locally
 

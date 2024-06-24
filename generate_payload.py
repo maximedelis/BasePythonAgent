@@ -11,7 +11,7 @@ async def main():
 
     callback_host = f"http://{mythic_host}"
     callback_port = 80
-    agent_name = "python_agent"  # set in the builder
+    agent_name = "python_agent"
 
     print(
         f"[*] Connecting to Mythic at {mythic_host} with username {mythic_login_username}"
@@ -32,7 +32,7 @@ async def main():
         filename="MxdlAgent.py",
         operating_system="Windows",
         include_all_commands=True,
-        c2_profiles=[  # check parameters of the C2 Profile to add more...
+        c2_profiles=[
             {
                 "c2_profile": "http",
                 "c2_profile_parameters": {
