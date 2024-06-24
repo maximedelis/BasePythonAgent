@@ -6,7 +6,7 @@ import threading, queue
 CHUNK_SIZE = 51200
 
 
-class Mxdl:
+class PythonAgent:
     def encrypt(self, data):
         from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
         from cryptography.hazmat.primitives import hashes, hmac, padding
@@ -318,4 +318,4 @@ class Mxdl:
 
 
 if __name__ == "__main__":
-    Mxdl = Mxdl()
+    PythonAgent = PythonAgent()

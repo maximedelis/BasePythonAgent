@@ -26,6 +26,13 @@ class PythonAgent(PayloadType):
             description="Choose output format (lol)",
             choices=["py"],
             default_value="py"
+        ),
+        BuildParameter(
+            name="https_check",
+            parameter_type=BuildParameterType.ChooseOne,
+            description="Verify HTTPS certificate (if HTTP, leave yes)",
+            choices=["Yes", "No"],
+            default_value="Yes"
         )
     ]
     agent_path = pathlib.Path(".") / "python_agent"
@@ -35,7 +42,7 @@ class PythonAgent(PayloadType):
     build_steps = [  # Build steps
         BuildStep(step_name="Gathering Files", step_description="Making sure all commands have backing files on disk"),
         BuildStep(step_name="Configuring", step_description="Stamping in configuration values"),
-        BuildStep(step_name="Compiling", step_description="Compiling the agent...")
+        BuildStep(step_name="Compiling", step_description="Compiling the agent")
     ]
 
     async def build(self) -> BuildResponse:  # Build function called when an agent is generated
@@ -76,12 +83,15 @@ class PythonAgent(PayloadType):
                     else:
                         base_code = base_code.replace(key, val)
 
-            base_code = base_code.replace("urlopen(req)", "urlopen(req, context=gcontext)")
-            base_code = base_code.replace("#CERTSKIP",
+                    if self.get_parameter("https_check") == "No":
+                        base_code = base_code.replace("urlopen(req)", "urlopen(req, context=gcontext)")
+                        base_code = base_code.replace("#CERTSKIP",
                 """
         gcontext = ssl.create_default_context()
         gcontext.check_hostname = False
         gcontext.verify_mode = ssl.CERT_NONE\n""")
+                    else:
+                        base_code = base_code.replace("#CERTSKIP", "")
 
             await SendMythicRPCPayloadUpdatebuildStep(MythicRPCPayloadUpdateBuildStepMessage(
                 PayloadUUID=self.uuid,
