@@ -270,7 +270,7 @@ class Mxdl:
                 j = random.randrange(0, int(v))
         time.sleep(self.agent_config["Sleep"] + j)
 
-    #COMMANDS_HERE
+#COMMANDS_HERE
 
     def __init__(self):
         self.socks_open = {}
